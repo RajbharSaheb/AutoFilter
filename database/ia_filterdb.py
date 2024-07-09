@@ -31,10 +31,13 @@ class Media(Document):
 async def get_files_db_size():
     return (await mydb.command("dbstats"))['dataSize']
     
-async def save_file_post(bot, media):
+async def save_file(bot, media):
+    """Save file in database"""
+
+    # TODO: Find better way to get same file_id for same media to avoid duplicates
+    file_id, file_ref = unpack_new_file_id(media.file_id)
+    file_name = re.sub(r"@\w+|(_|\-|\.|\+\|[\|]\|(\|)\|)", " ", str(media.file_name))
     try:
-        file_id, file_ref = unpack_new_file_id(media.file_id)
-        file_name = re.sub(r"[@\w+|(_|\-|\.|\+\|[\|]\|(\|)\|)]", " ", str(media.file_name))
         file = Media(
             file_id=file_id,
             file_ref=file_ref,
@@ -44,24 +47,29 @@ async def save_file_post(bot, media):
             caption=media.caption.html if media.caption else None,
             file_type=media.mime_type.split('/')[0]
         )
-        await file.commit()
-        thumbs = media.thumbs[0]
-        file_ids = thumbs.file_id
-        location = await bot.download_media(file_ids)
-        btn = [[InlineKeyboardButton("GET FILE", url=f"https://t.me/{temp.U_NAME}?start=file_-1001901092974_{file_id}"),]]
-        await bot.send_photo(
-            photo=location,
-            chat_id=AUTH_CHANNEL,
-            caption=f"#NEW_FILE_UPLOADED\n\nFile Name: {file_name}\n\nFile Size: {get_size(media.file_size)}\n\nClick to download",
-            reply_markup=InlineKeyboardMarkup(btn)
-        )
-        return 'suc'
     except ValidationError:
         print('Error occurred while saving file in database')
         return 'err'
-    except DuplicateKeyError:
-        print(f'{getattr(media, "file_name", "NO_FILE")} is already saved in database')
-        return 'dup'
+    else:
+        try:
+            await file.commit()
+        except DuplicateKeyError:      
+            print(f'{getattr(media, "file_name", "NO_FILE")} is already saved in database') 
+            return 'dup'
+        else:
+            print(f'{getattr(media, "file_name", "NO_FILE")} is saved to database')
+            thumbs= media.thumbs[0]
+            file_ids= thumbs.file_id
+            location=await bot.download_media(file_ids)
+            btn = [[
+            InlineKeyboardButton("✅ check file ✅", url=f"https://t.me/{temp.U_NAME}?start=file_-1001901092974_{file_id}"),
+        ]]
+            await bot.send_photo(photo=location,
+                chat_id=AUTH_CHANNEL,
+                caption=f"#NEW_FILE_UPLOADED ✅\n\n🏷 Fɪʟᴇ Nᴀᴍᴇ : {file_name}\n\nFile Size 📂:- {get_size(media.file_size)}\n\nClick To Below Button For Get File 🗃️",
+                reply_markup=InlineKeyboardMarkup(btn)
+            )   
+            return 'suc'
 
 async def get_search_results(query, max_results=MAX_BTN, offset=0, lang=None):
     query = query.strip()
