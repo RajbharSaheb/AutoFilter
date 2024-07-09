@@ -31,8 +31,7 @@ class Media(Document):
 async def get_files_db_size():
     return (await mydb.command("dbstats"))['dataSize']
     
-async def save_file(media):
-    aasync def save_file_post(bot, media):
+async def save_file_post(bot, media):
     try:
         file_id, file_ref = unpack_new_file_id(media.file_id)
         file_name = re.sub(r"[@\w+|(_|\-|\.|\+\|[\|]\|(\|)\|)]", " ", str(media.file_name))
