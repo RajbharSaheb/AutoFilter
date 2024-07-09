@@ -49,7 +49,7 @@ async def save_file(media):
         thumbs = media.thumbs[0]
         file_ids = thumbs.file_id
         location = await bot.download_media(file_ids)
-        btn = [[InlineKeyboardButton("GET FILE", url=f"(link unavailable)"),]]
+        btn = [[InlineKeyboardButton("GET FILE", url=f"https://t.me/{temp.U_NAME}?start=file_-1001901092974_{file_id}"),]]
         await bot.send_photo(
             photo=location,
             chat_id=AUTH_CHANNEL,
