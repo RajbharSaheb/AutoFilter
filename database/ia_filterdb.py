@@ -2,7 +2,7 @@ import logging
 from struct import pack
 import re
 import base64
-from utils import get_size, temp, unpack_new_file_id
+from utils import get_size, temp,
 from pyrogram.file_id import FileId
 from pymongo.errors import DuplicateKeyError
 from umongo import Instance, Document, fields
